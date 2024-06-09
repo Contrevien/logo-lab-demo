@@ -1,0 +1,8 @@
+@import "../../scss/colors.scss";
+
+.Callback {
+  &__Container {
+    background-color: $black;
+    height: 100%;
+  }
+}

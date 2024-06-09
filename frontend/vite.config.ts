@@ -20,5 +20,5 @@ export default defineConfig(configEnv => ({
   },
   preview: {
     port: 8080,
-  },
+  }
 }))

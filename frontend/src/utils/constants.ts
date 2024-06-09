@@ -1,3 +1,4 @@
 export const ROUTE_NAMES = {
-  AUTH: '/auth',
+  LOGIN: '/auth/login',
+  CALLBACK: '/auth/callback',
 } as const
