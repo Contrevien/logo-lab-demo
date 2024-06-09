@@ -13,7 +13,7 @@ COPY . .
 
 RUN go build -o main .
 
-RUN go install github.com/cosmtrek/air@latest
+RUN go install github.com/air-verse/air@latest
 
 EXPOSE 8888
 

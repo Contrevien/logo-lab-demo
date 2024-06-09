@@ -1,17 +1,29 @@
 version: '3.9'
 
 services:
-  postgres:
-    hostname: postgres
-    image: postgres:latest
+  db:
+    image: mongo
+    container_name: test-mongo
+    restart: always
     ports:
-      - ${DB_PORT}:5432
-    volumes:
-      - ./volumes/postgres:/var/lib/postgresql/data
+      - 27017:27017
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
-      - POSTGRES_DB=${DB_NAME}
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin1234
+    networks:
+      - app-network
+  
+  db-client:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=admin1234
+      - ME_CONFIG_MONGODB_URL=mongodb://admin:admin1234@db:27017/
+    depends_on:
+      - db
     networks:
       - app-network
         
@@ -22,12 +34,12 @@ services:
       context: . 
       dockerfile: Dockerfile
     ports:
-      - ${GOLANG_PORT}:${GOLANG_PORT} 
+      - 8080:8080 
     restart: always
     volumes:
       -  ./:/app
     depends_on: 
-      - postgres
+      - db
     env_file:
       - .env
     networks:

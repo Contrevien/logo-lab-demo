@@ -1,23 +1,21 @@
-package routes
+package route
 
 import (
-	"github.com/Caknoooo/go-gin-clean-template/controller"
-	"github.com/Caknoooo/go-gin-clean-template/middleware"
-	"github.com/Caknoooo/go-gin-clean-template/service"
+	"time"
+
+	"logo-lab-demo/controller"
+	"logo-lab-demo/domain"
+	"logo-lab-demo/mongo"
+	"logo-lab-demo/repository"
+	"logo-lab-demo/service"
+
 	"github.com/gin-gonic/gin"
 )
 
-func User(route *gin.Engine, userController controller.UserController, jwtService service.JWTService) {
-	routes := route.Group("/api/user")
-	{
-		// User
-		routes.POST("", userController.Register)
-		routes.GET("", userController.GetAllUser)
-		routes.POST("/login", userController.Login)
-		routes.DELETE("", middleware.Authenticate(jwtService), userController.Delete)
-		routes.PATCH("", middleware.Authenticate(jwtService), userController.Update)
-		routes.GET("/me", middleware.Authenticate(jwtService), userController.Me)
-		routes.POST("/verify_email", userController.VerifyEmail)
-		routes.POST("/send_verification_email", userController.SendVerificationEmail)
+func NewUserRouter(timeout time.Duration, db mongo.Database, group *gin.RouterGroup) {
+	ur := repository.NewUserRepository(db, domain.CollectionUser)
+	pc := &controller.UserController{
+		UserService: service.NewUserService(ur, timeout),
 	}
+	group.GET("/user", pc.Fetch)
 }

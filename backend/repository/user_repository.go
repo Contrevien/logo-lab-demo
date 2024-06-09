@@ -2,152 +2,72 @@ package repository
 
 import (
 	"context"
-	"math"
 
-	"github.com/Caknoooo/go-gin-clean-template/dto"
-	"github.com/Caknoooo/go-gin-clean-template/entity"
-	"gorm.io/gorm"
+	"logo-lab-demo/domain"
+	"logo-lab-demo/mongo"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type (
-	UserRepository interface {
-		RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error)
-		GetAllUserWithPagination(ctx context.Context, tx *gorm.DB, req dto.PaginationRequest) (dto.GetAllUserRepositoryResponse, error)
-		GetUserById(ctx context.Context, tx *gorm.DB, userId string) (entity.User, error)
-		GetUserByEmail(ctx context.Context, tx *gorm.DB, email string) (entity.User, error)
-		CheckEmail(ctx context.Context, tx *gorm.DB, email string) (entity.User, bool, error)
-		UpdateUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error)
-		DeleteUser(ctx context.Context, tx *gorm.DB, userId string) error
-	}
+type userRepository struct {
+	database   mongo.Database
+	collection string
+}
 
-	userRepository struct {
-		db *gorm.DB
-	}
-)
-
-func NewUserRepository(db *gorm.DB) UserRepository {
+func NewUserRepository(db mongo.Database, collection string) domain.UserRepository {
 	return &userRepository{
-		db: db,
+		database:   db,
+		collection: collection,
 	}
 }
 
-func (r *userRepository) RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error) {
-	if tx == nil {
-		tx = r.db
-	}
+func (ur *userRepository) Create(c context.Context, user *domain.User) error {
+	collection := ur.database.Collection(ur.collection)
 
-	if err := tx.WithContext(ctx).Create(&user).Error; err != nil {
-		return entity.User{}, err
-	}
+	_, err := collection.InsertOne(c, user)
 
-	return user, nil
+	return err
 }
 
-func (r *userRepository) GetAllUserWithPagination(ctx context.Context, tx *gorm.DB, req dto.PaginationRequest) (dto.GetAllUserRepositoryResponse, error) {
-	if tx == nil {
-		tx = r.db
-	}
+func (ur *userRepository) Fetch(c context.Context) ([]domain.User, error) {
+	collection := ur.database.Collection(ur.collection)
 
-	var users []entity.User
-	var err error
-	var count int64
+	opts := options.Find().SetProjection(bson.D{{Key: "password", Value: 0}})
+	cursor, err := collection.Find(c, bson.D{}, opts)
 
-	if req.PerPage == 0 {
-		req.PerPage = 10
-	}
-
-	if req.Page == 0 {
-		req.Page = 1
-	}
-
-	query := tx.WithContext(ctx).Model(&entity.User{})
-	if req.Search != "" {
-		query = query.Where("name LIKE ?", "%"+req.Search+"%")
-	}
-
-	err = query.Count(&count).Error
 	if err != nil {
-		return dto.GetAllUserRepositoryResponse{}, err
+		return nil, err
 	}
 
-	offset := (req.Page - 1) * req.PerPage
-	maxPage := int64(math.Ceil(float64(count) / float64(req.PerPage)))
+	var users []domain.User
 
-	err = query.Offset(offset).Limit(req.PerPage).Find(&users).Error
+	err = cursor.All(c, &users)
+	if users == nil {
+		return []domain.User{}, err
+	}
+
+	return users, err
+}
+
+func (ur *userRepository) GetByEmail(c context.Context, email string) (domain.User, error) {
+	collection := ur.database.Collection(ur.collection)
+	var user domain.User
+	err := collection.FindOne(c, bson.M{"email": email}).Decode(&user)
+	return user, err
+}
+
+func (ur *userRepository) GetByID(c context.Context, id string) (domain.User, error) {
+	collection := ur.database.Collection(ur.collection)
+
+	var user domain.User
+
+	idHex, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return dto.GetAllUserRepositoryResponse{}, err
+		return user, err
 	}
 
-	return dto.GetAllUserRepositoryResponse{
-		Users: users,
-		PaginationResponse: dto.PaginationResponse{
-			Page:    req.Page,
-			PerPage: req.PerPage,
-			MaxPage: maxPage,
-			Count:   count,
-		},
-	}, nil
-}
-
-func (r *userRepository) GetUserById(ctx context.Context, tx *gorm.DB, userId string) (entity.User, error) {
-	if tx == nil {
-		tx = r.db
-	}
-
-	var user entity.User
-	if err := tx.WithContext(ctx).Where("id = ?", userId).Take(&user).Error; err != nil {
-		return entity.User{}, err
-	}
-
-	return user, nil
-}
-
-func (r *userRepository) GetUserByEmail(ctx context.Context, tx *gorm.DB, email string) (entity.User, error) {
-	if tx == nil {
-		tx = r.db
-	}
-
-	var user entity.User
-	if err := tx.WithContext(ctx).Where("email = ?", email).Take(&user).Error; err != nil {
-		return entity.User{}, err
-	}
-
-	return user, nil
-}
-
-func (r *userRepository) CheckEmail(ctx context.Context, tx *gorm.DB, email string) (entity.User, bool, error) {
-	if tx == nil {
-		tx = r.db
-	}
-
-	var user entity.User
-	if err := tx.WithContext(ctx).Where("email = ?", email).Take(&user).Error; err != nil {
-		return entity.User{}, false, err
-	}
-
-	return user, true, nil
-}
-
-func (r *userRepository) UpdateUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error) {
-	if tx == nil {
-		tx = r.db
-	}
-
-	if err := tx.WithContext(ctx).Updates(&user).Error; err != nil {
-		return entity.User{}, err
-	}
-
-	return user, nil
-}
-
-func (r *userRepository) DeleteUser(ctx context.Context, tx *gorm.DB, userId string) error {
-	if tx == nil {
-		tx = r.db
-	}
-
-	if err := tx.WithContext(ctx).Delete(&entity.User{}, "id = ?", userId).Error; err != nil {
-		return err
-	}
-
-	return nil
+	err = collection.FindOne(c, bson.M{"_id": idHex}).Decode(&user)
+	return user, err
 }
