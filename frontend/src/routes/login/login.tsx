@@ -10,7 +10,13 @@ const Login = () => {
     <div className={styles.Login__Container}>
       <LogoSvg height={100} width={100} />
       <h1>Logo Lab Demo Chat</h1>
-      <Button onClick={() => loginWithRedirect()} variant='contained' className={styles.Login__Button}>ログイン</Button>
+      <Button
+        onClick={() => loginWithRedirect()}
+        variant='contained'
+        className={styles.Login__Button}
+      >
+        ログイン
+      </Button>
     </div>
   )
 }

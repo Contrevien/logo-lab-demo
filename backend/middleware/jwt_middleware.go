@@ -56,13 +56,14 @@ func JwtAuthMiddleware(auth_domain string, audience string) gin.HandlerFunc {
 
 			claims, err := jwtValidator.ValidateToken(c, authToken)
 
+			log.Println(claims)
+
 			if err != nil {
-				c.Set("x-user-id", claims.(*validator.ValidatedClaims).RegisteredClaims.Subject)
-				c.Next()
+				c.JSON(http.StatusUnauthorized, domain.ErrorResponse{Message: err.Error()})
+				c.Abort()
 				return
 			}
-			c.JSON(http.StatusUnauthorized, domain.ErrorResponse{Message: err.Error()})
-			c.Abort()
+			c.Next()
 			return
 		}
 		c.JSON(http.StatusUnauthorized, domain.ErrorResponse{Message: "Not authorized"})
