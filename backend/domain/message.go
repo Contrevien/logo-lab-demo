@@ -12,26 +12,31 @@ const (
 )
 
 type MessageDB struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty"`
-	Text       string             `bson:"text,omitempty"`
-	SentByName string             `bson:"sentByName,omitempty"`
-	SendByID   string             `bson:"sentByID,omitempty"`
-	CreatedAt  int64              `bson:"createdAt,omitempty"`
+	ID         primitive.ObjectID `bson:"_id"`
+	Text       string             `bson:"text"`
+	SentByName string             `bson:"sentByName"`
+	SendByID   string             `bson:"sentByID"`
+	CreatedAt  int64              `bson:"createdAt"`
 }
 
 type CreateMessage struct {
-	Text       string `bson:"text,omitempty"`
-	SentByName string `bson:"sentByName,omitempty"`
-	SentByID   string `bson:"sentByID,omitempty"`
-	CreatedAt  int64  `bson:"createdAt,omitempty"`
+	Text       string `bson:"text"`
+	SentByName string `bson:"sentByName"`
+	SentByID   string `bson:"sentByID"`
+	CreatedAt  int64  `bson:"createdAt"`
+}
+
+type MessageResponse struct {
+	Messages []MessageDB `bson:"messages"`
+	HasMore  bool        `bson:"hasMore"`
 }
 
 type MessageRepository interface {
 	Create(c context.Context, message CreateMessage) error
-	Fetch(c context.Context, page int) ([]MessageDB, error)
+	Fetch(c context.Context, page int) ([]MessageDB, bool, error)
 }
 
 type MessageService interface {
-	GetMessages(c context.Context, page int) ([]MessageDB, error)
+	GetMessages(c context.Context, page int) (*MessageResponse, error)
 	InsertMessage(c context.Context, message CreateMessage) error
 }

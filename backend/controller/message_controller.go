@@ -26,13 +26,13 @@ func (pc *MessageController) Fetch(c *gin.Context) {
 		page = v
 	}
 
-	user, err := pc.MessageService.GetMessages(c, page)
+	res, err := pc.MessageService.GetMessages(c, page)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, res)
 }
 
 func (pc *MessageController) Create(c *gin.Context) {

@@ -4,6 +4,8 @@ import { ROUTE_NAMES } from './utils/constants'
 import { ThemeProvider } from '@mui/material'
 import theme from './utils/theme'
 import { AuthProvider } from './context/auth'
+import { Provider } from 'react-redux'
+import store from './services/store'
 
 const AUTH0_PROPS = {
   domain: import.meta.env.VITE_OAUTH_DOMAIN,
@@ -18,9 +20,11 @@ const App = () => {
   return (
     <Auth0Provider {...AUTH0_PROPS}>
       <ThemeProvider theme={theme}>
-        <AuthProvider>
-          <Root />
-        </AuthProvider>
+        <Provider store={store}>
+          <AuthProvider>
+            <Root />
+          </AuthProvider>
+        </Provider>
       </ThemeProvider>
     </Auth0Provider>
   )

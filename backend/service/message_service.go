@@ -19,16 +19,21 @@ func NewMessageService(messageRepository domain.MessageRepository, timeout time.
 	}
 }
 
-func (pu *messageService) GetMessages(c context.Context, page int) ([]domain.MessageDB, error) {
+func (pu *messageService) GetMessages(c context.Context, page int) (*domain.MessageResponse, error) {
 	ctx, cancel := context.WithTimeout(c, pu.contextTimeout)
 	defer cancel()
 
-	messages, err := pu.messageRepository.Fetch(ctx, page)
+	messages, hasMore, err := pu.messageRepository.Fetch(ctx, page)
 	if err != nil {
 		return nil, err
 	}
 
-	return messages, nil
+	res := &domain.MessageResponse{
+		Messages: messages,
+		HasMore:  hasMore,
+	}
+
+	return res, nil
 }
 
 func (pu *messageService) InsertMessage(c context.Context, message domain.CreateMessage) error {

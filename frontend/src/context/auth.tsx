@@ -1,3 +1,4 @@
+import { ACCESS_TOKEN_KEY } from '@/utils/constants'
 import { useAuth0 } from '@auth0/auth0-react'
 import {
   Dispatch,
@@ -43,6 +44,8 @@ export function AuthProvider (props: AuthProviderProps) {
           },
         })
 
+        if (!accessToken) throw new Error('Could not fetch the access token')
+
         const userDetailsByIdUrl = `https://${
           import.meta.env.VITE_OAUTH_DOMAIN
         }/api/v2/users/${auth0User?.sub}`
@@ -53,9 +56,11 @@ export function AuthProvider (props: AuthProviderProps) {
           },
         })
 
-        const { user_metadata } = await metadataResponse.json()
+        localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
 
-        setUser(user_metadata)
+        const { user_metadata: userMeta } = await metadataResponse.json()
+
+        setUser(userMeta)
       } catch (e) {
         console.log(e)
       }
