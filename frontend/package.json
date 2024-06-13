@@ -27,6 +27,7 @@
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "2.1.0",
     "babel-eslint": "10.1.0",
+    "classnames": "^2.5.1",
     "eslint": "8.24.0",
     "eslint-config-react-app": "7.0.1",
     "eslint-config-standard": "17.0.0",

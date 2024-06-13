@@ -1,0 +1,33 @@
+@import "../../../../scss/colors.scss";
+@import "../../../../scss/breakpoints.scss";
+
+.Message {
+  &__Box {
+    padding: 16px;
+    border-radius: 5px;
+    min-width: 50px;
+    max-width: 250px;
+    background-color: $white;
+    color: $black;
+    margin-top: 20px;
+
+    @include mq(lg) {
+      max-width: 500px;
+    }
+  }
+
+  &__Self {
+    background-color: $primary;
+    align-self: flex-end;
+  }
+
+  &__Name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 16px;
+  }
+
+  &__Date {
+    display: none;
+  }
+}

@@ -35,8 +35,11 @@ func (mr *messageRepository) Create(c context.Context, message domain.CreateMess
 func (mr *messageRepository) Fetch(c context.Context, page int) ([]domain.MessageDB, bool, error) {
 	collection := mr.database.Collection(mr.collection)
 
-	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetSkip(int64((page - 1) * domain.PageLimit)).SetLimit(domain.PageLimit)
+	opts := options.Find().SetSkip(int64((page - 1) * domain.PageLimit)).SetLimit(domain.PageLimit)
 	cursor, err := collection.Find(c, bson.D{}, opts)
+	if err != nil {
+		return nil, false, err
+	}
 
 	hasMore := true
 	total, err := collection.CountDocuments(c, bson.D{})

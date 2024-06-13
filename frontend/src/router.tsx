@@ -1,7 +1,7 @@
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
 import { ROUTE_NAMES } from '@/utils/constants'
-import Login from '@/routes/login/login'
-import Chat from './routes/chat/chat'
+import Login from '@/routes/login'
+import Chat from '@/routes/chat'
 import { useAuthContext } from './context/auth'
 
 const Root = () => {

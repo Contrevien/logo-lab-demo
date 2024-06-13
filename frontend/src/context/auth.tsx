@@ -1,4 +1,4 @@
-import { ACCESS_TOKEN_KEY } from '@/utils/constants'
+import { ACCESS_TOKEN_KEY, ROUTE_NAMES } from '@/utils/constants'
 import { useAuth0 } from '@auth0/auth0-react'
 import {
   Dispatch,
@@ -9,6 +9,7 @@ import {
   useEffect,
   useState,
 } from 'react'
+import { useHistory } from 'react-router-dom'
 
 type AuthContextProps = {
   user: any;
@@ -17,7 +18,7 @@ type AuthContextProps = {
 
 const AuthContext = createContext<AuthContextProps>({
   user: null,
-  setUser: () => {},
+  setUser: () => { },
 })
 
 type AuthProviderProps = {
@@ -33,6 +34,8 @@ export function AuthProvider (props: AuthProviderProps) {
     getAccessTokenWithPopup,
   } = useAuth0()
 
+  const history = useHistory()
+
   useEffect(() => {
     const getUserMetadata = async () => {
       try {
@@ -46,9 +49,8 @@ export function AuthProvider (props: AuthProviderProps) {
 
         if (!accessToken) throw new Error('Could not fetch the access token')
 
-        const userDetailsByIdUrl = `https://${
-          import.meta.env.VITE_OAUTH_DOMAIN
-        }/api/v2/users/${auth0User?.sub}`
+        const userDetailsByIdUrl = `https://${import.meta.env.VITE_OAUTH_DOMAIN
+          }/api/v2/users/${auth0User?.sub}`
 
         const metadataResponse = await fetch(userDetailsByIdUrl, {
           headers: {
@@ -58,7 +60,7 @@ export function AuthProvider (props: AuthProviderProps) {
 
         localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
 
-        const { user_metadata: userMeta } = await metadataResponse.json()
+        const userMeta = await metadataResponse.json()
 
         setUser(userMeta)
       } catch (e) {
@@ -67,7 +69,7 @@ export function AuthProvider (props: AuthProviderProps) {
     }
 
     if (isAuthenticated && auth0User) getUserMetadata()
-  }, [getAccessTokenWithPopup, auth0User?.sub, isAuthenticated])
+  }, [getAccessTokenWithPopup, auth0User?.sub, isAuthenticated, history])
 
   return (
     <AuthContext.Provider

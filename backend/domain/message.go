@@ -12,11 +12,11 @@ const (
 )
 
 type MessageDB struct {
-	ID         primitive.ObjectID `bson:"_id"`
-	Text       string             `bson:"text"`
-	SentByName string             `bson:"sentByName"`
-	SendByID   string             `bson:"sentByID"`
-	CreatedAt  int64              `bson:"createdAt"`
+	ID         primitive.ObjectID `json:"_id" bson:"_id"`
+	Text       string             `json:"text" bson:"text"`
+	SentByName string             `json:"sentByName" bson:"sentByName"`
+	SendByID   string             `json:"sentByID" bson:"sentByID"`
+	CreatedAt  int64              `json:"createdAt" bson:"createdAt"`
 }
 
 type CreateMessage struct {
@@ -27,8 +27,8 @@ type CreateMessage struct {
 }
 
 type MessageResponse struct {
-	Messages []MessageDB `bson:"messages"`
-	HasMore  bool        `bson:"hasMore"`
+	Messages []MessageDB `json:"messages"`
+	HasMore  bool        `json:"hasMore"`
 }
 
 type MessageRepository interface {
